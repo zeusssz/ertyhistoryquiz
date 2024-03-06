@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>History Quiz</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f2f2f2;
+    }
+
+    .quiz-container {
+      text-align: center;
+      background-color: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes swipeOut {
+      0% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-100%);
+        opacity: 0;
+      }
+    }
+
+    h2 {
+      color: #333;
+    }
+
+    #question {
+      margin-bottom: 20px;
+      font-size: 18px;
+    }
+
+    .options {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .option {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .option:hover {
+      background-color: #f5f5f5;
+    }
+
+    .option.disabled {
+      pointer-events: none;
+      opacity: 0.5;
+    }
+
+    #result {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+
+    .final-card {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      animation: fadeIn 0.5s ease;
+    }
+
+    .final-card.show {
+      display: block;
+    }
+
+    .quiz-finished-text {
+      color: #4CAF50;
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container" id="quiz-container">
+    <h2>History Quiz</h2>
+    <div id="question"></div>
+    <div class="options" id="options"></div>
+    <p id="result"></p>
+  </div>
+
+  <div class="final-card" id="final-card">
+    <h2 class="quiz-finished-text">Quiz Finished!</h2>
+    <p id="score"></p>
+  </div>
+
+  <script>
+    const questions = [
+      { 
+        question: "Which year did Alexander the Great die?",
+        answer: "323 BC",
+        fakeOptions: ["336 BC", "300 BC", "400 BC"]
+      },
+      { 
+        question: "The last Persian Emperor's name was...",
+        answer: "Darius",
+        fakeOptions: ["Matt", "Alexander", "Cyrus"]
+      },
+      { 
+        question: "Who began the Maccabean revolution?",
+        answer: "Matthias",
+        fakeOptions: ["Judah", "Judas", "Maccabean"]
+      },
+      { 
+        question: "Which famous Saint was killed by the Romans around 303?",
+        answer: "Saint George",
+        fakeOptions: ["Saint Patrick", "Saint David", "Saint Andrews"]
+      },
+      { 
+        question: "Which Arab general was defeated in every battle?",
+        answer: "Khalid ibn al-Walid",
+        fakeOptions: ["Amr ibn al-'As", "Muawiyah", "Abu Ubaida"]
+      },
+      { 
+        question: "When did the Seljuk Turks conquer Jerusalem?",
+        answer: "1073",
+        fakeOptions: ["1071", "1072", "1075"]
+      },
+      { 
+        question: "Who was Baldwin?",
+        answer: "A Crusader King",
+        fakeOptions: ["A Mongol King", "King of France", "King of Spain"]
+      },
+      { 
+        question: "What did Saladin do in 1187?",
+        answer: "He conquered Jerusalem",
+        fakeOptions: ["He conquered Antioch", "He conquered Rome", "He killed Baldwin"]
+      },
+      { 
+        question: "Saladin let Balian go after the Conquest of Jerusalem, but what did Balian do?",
+        answer: "He fought Saladin",
+        fakeOptions: ["He ran away to England", "He died", "He turned into Frankenstein"]
+      },
+      { 
+        question: "Who was Guy of Lusignan?",
+        answer: "King of Jerusalem",
+        fakeOptions: ["King of France", "King of Syria", "King of Rome"]
+      }
+    ];
+
+    const questionElement = document.getElementById('question');
+    const optionsContainer = document.getElementById('options');
+    const resultElement = document.getElementById('result');
+    const finalCard = document.getElementById('final-card');
+    const quizContainer = document.getElementById('quiz-container');
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+
+    function displayQuestion() {
+      const currentQuestion = questions[currentQuestionIndex];
+      questionElement.textContent = currentQuestion.question;
+
+      optionsContainer.innerHTML = ''; // Clear previous options
+
+      const allOptions = [currentQuestion.answer, ...currentQuestion.fakeOptions];
+      allOptions.sort(() => Math.random() - 0.5); // Shuffle options
+
+      allOptions.forEach((option) => {
+        const optionElement = document.createElement('div');
+        optionElement.classList.add('option');
+        optionElement.textContent = option;
+        optionElement.addEventListener('click', () => checkAnswer(option, optionElement));
+        optionsContainer.appendChild(optionElement);
+      });
+    }
+
+    function checkAnswer(selectedOption, optionElement) {
+      const correctAnswer = questions[currentQuestionIndex].answer;
+
+      if (selectedOption === correctAnswer) {
+        resultElement.textContent = "Correct!";
+        resultElement.style.color = "#4CAF50";
+        score++;
+      } else {
+        resultElement.textContent = "Incorrect. The correct answer is: " + correctAnswer;
+        resultElement.style.color = "#f44336";
+      }
+
+      const allOptionElements = document.querySelectorAll('.option');
+      allOptionElements.forEach((el) => {
+        el.classList.add('disabled'); // Disable all options
+      });
+
+      optionElement.classList.remove('disabled'); // Re-enable the selected option
+
+      setTimeout(() => {
+        swipeOutCard();
+        setTimeout(() => {
+          // Move to the next question or end the quiz
+          currentQuestionIndex++;
+          if (currentQuestionIndex < questions.length) {
+            displayQuestion();
+            swipeInCard();
+            resultElement.textContent = ''; // Clear the result
+          } else {
+            showFinalCard();
+          }
+        }, 500); // Adjust this timing according to the swipeOut animation duration
+      }, 2000); // Adjust this timing to keep the correct answer displayed before swiping out
+    }
+
+    function swipeOutCard() {
+      quizContainer.style.animation = 'swipeOut 0.5s forwards';
+    }
+
+    function swipeInCard() {
+      quizContainer.style.animation = '';
+    }
+
+    function showFinalCard() {
+      finalCard.classList.add('show');
+      finalCard.querySelector('#score').textContent = `Your score: ${score}/${questions.length}`;
+    }
+
+    // Initial display
+    displayQuestion();
+  </script>
+</body>
+</html>
